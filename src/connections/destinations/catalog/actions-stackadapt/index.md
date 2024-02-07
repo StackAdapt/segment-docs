@@ -1,13 +1,11 @@
 ---
-title: StackAdapt Destination
+title: StackAdapt (Actions) Destination
 id: 
 hide-personas-partial: true
 hide-boilerplate: true
 hide-dossier: false
 beta: true
 ---
-
-{% include content/plan-grid.md name="actions" %}
 
 ### Benefits of StackAdapt (Actions)
 
@@ -22,11 +20,11 @@ This destination is maintained by StackAdapt. For any issues with the destinatio
 1. Log in to your StackAdapt account and navigate to the Pixels page.
 2. Above the list of pixels, click the "Install StackAdapt Pixel" link.
 
-[!Image showing location of link to install Pixel](images/install-pixel-link.png)
+    ![Image showing location of link to install Pixel](images/install-pixel-link.png)
 
-3. In the instructions that appear, copy the universal pixel ID from the code snippet. Below is an example of a code snippet where the universal pixel ID is `sqHQa3Ob1hiF__2EcY3VZg1`.
+3. In the instructions that appear, copy the universal pixel ID from the code snippet. Below is an example of a code snippet where the universal pixel ID is `sqQHa3Ob1hFi__2EcYYVZg1`.
 
-[!Image showing location of universal pixel ID in code snippet](images/copy-pixel-id.png)
+![Image showing location of universal pixel ID in code snippet](images/copy-pixel-id.png)
 
 ### Setting up the StackAdapt destination in Segment
 
@@ -39,20 +37,78 @@ This destination is maintained by StackAdapt. For any issues with the destinatio
 7. Toggle on the Destination using the **Enable Destination** toggle.
 8. Click **Save Change**.
 
-## Conversion Tracking
+### StackAdapt Pixel Setup
 
-Advanced Matching helps you optimize your TikTok ads and drive performance by matching customer information with TikTok users. Hashed customer information can be shared with any TikTok event to attribute more conversions, build bigger audiences, and improve campaign optimization.
+Segment events that are forwarded to StackAdapt can be used to track ad conversions, and to generate retargeting and lookalike audiences. Please review the StackAdapt documentation for the general setup of these if you are not already familiar:
 
-There are two types of Advanced Matching: manual or automatic.
+- [Creating Conversion Events](https://support.stackadapt.com/hc/en-us/articles/360005859214-Creating-Conversion-Events){:target="_blank"}
+- [Creating Retargeting Audiences](https://support.stackadapt.com/hc/en-us/articles/360005939153-Creating-Retargeting-Audiences){:target="_blank"}
+- [How to Generate and Target a Lookalike Audience](https://support.stackadapt.com/hc/en-us/articles/360023738733-How-to-Generate-and-Target-a-Lookalike-Audience){:target="_blank"}
 
-**Manual Advanced Matching** is the passing of customer information to TikTok from your website. With this option, you have the flexibility to configure what information and for which event you want to pass to TikTok. This will be enabled automatically if PIIs are included in the Pixel events sent from TikTok Pixel Destination.
+Setup of conversion events, retargeting audiences, and lookalike audiences that fire on Segment events is largely the same as the setup in the StackAdapt documentation, with a few caveats:
 
-When email and/or phone number values are sent to TikTok, TikTok will try to match users with the PII you send to TikTok. If you don't send email or phone number values, TikTok will try to match users with IP and user-agent values that are included in the Pixel event payload.
+1. You **must** select "Universal Pixel" as the pixel type. This is because the StackAdapt destination in Segment uses your Universal Pixel ID to send events to StackAdapt.
+2. There is no need to install the StackAdapt pixel on your website as instructed in the "Installation" step, since Segment will forward events to StackAdapt that would normally be tracked by the StackAdapt pixel.
+3. If you choose to set up event rules, you will need to ensure that you use the event keys supported by the the StackAdapt destination as described below.
 
-**Automatic Advanced Matching** is when advertisers instruct TikTok to automatically identify form fields on pages where Pixel is installed and to hash and collect email and phone numbers entered on those pages for ad measurement and attribution purposes. Learn more about Automatic Advanced Matching and how to turn it on in [TikTok help center](https://ads.tiktok.com/help/article/advanced-matching-web?lang=en){:target="_blank"}.
+### Event Rules
 
-To maximize Advanced Matching's performance, TikTok recommends using both Manual and Automatic Advanced Matching at the same time.
+The StackAdapt Segment destination sends an `action` event key which by default is mapped to the Segment event name. Creating rules on this `action` key should be sufficient for most simple event rule use cases. For example, if you fire a Segment event when a user fills out a registration form on your website and want to track this as a conversion event in StackAdapt, you can create a rule in StackAdapt that matches the `action` key with the Segment event name.
 
-## Data and privacy
+A Segment event fired with the code `analytics.track("User Registered")` can be tracked as a conversion event with an event rule that matches an `action` of `User Registered` as shown below:
 
-Visit TikTok's [docs](https://ads.tiktok.com/i18n/official/policy/business-products-terms){:target="_blank"} to learn more about TikTok's privacy and data terms.
+![Image showing event rule in StackAdapt the matches a User Registered event](images/user-registered-event-rule.png)
+
+#### Ecommerce Events
+
+The StackAdapt destination also supports forwarding ecommerce fields for the purpose of creating event rules that match ecommerce events, with default mappings to properties specified in the [Segment V2 Ecommerce Event Spec](/docs/connections/spec/ecommerce/v2/) as described in the below table:
+
+| Segment Ecommerce Event Property | StackAdapt Event Key |
+|----------------------------------|----------------------|
+| `order_id`                       | `order_id`           |
+| `revenue`                        | `revenue`            |
+| `product_id`                     | `product_id`         |
+| `category`                       | `product_category`   |
+| `name`                           | `product_name`       |
+| `price`                          | `product_price`      |
+| `quantity`                       | `product_quantity`   |
+
+For events that can involve multiple products, such as checkout events, we forward a JSON array of product objects with a `products` key and fields that map by default to following Segment product array fields:
+
+| Segment Ecommerce Event Property | StackAdapt Product Object Key |
+|----------------------------------|-------------------------------|
+| `products.$.product_id`          | `product_id`                  |
+| `products.$.category`            | `product_category`            |
+| `products.$.name`                | `product_name`                |
+| `products.$.price`               | `product_price`               |
+| `products.$.quantity`            | `product_quantity`            |
+
+For example, to create a conversion event when an order is completed with a revenue value greater than 10, you could set up an event rule matching an `action` value of `Order Completed` and a `revenue` value greater than 10 as shown below:
+
+![Image showing event rule in StackAdapt the matches an Order Completed event with a revenue greater than 10](images/order-completed-event-rule.png)
+
+This rule would match a Segment event fired with code such as:
+
+```javascript
+analytics.track("Order Completed", {
+  order_id: '50314b8e9bcf000000000000',
+  revenue: 11.5
+  products: [
+    {
+      product_id: '507f1f77bcf86cd799439011',
+      name: 'Monopoly: 3rd Edition',
+      price: 11.5,
+      quantity: 1,
+      category: 'Games'
+    }
+  ]
+});
+```
+
+### URL Rules
+
+If you are using URL rules, these will be matched whenever Segment sends an event to StackAdapt with a `url` matching the URL rule. This should be accomplished by the page event Segment automatically fires when a page is viewed, so setup of URL rules should be identical to setting up URL rules with the StackAdapt pixel.
+
+## Data and Privacy
+
+Review [StackAdapt's Data Processing Agreement](https://www.stackadapt.com/data-processing-agreement){:target="_blank"} to learn more about StackAdapt's privacy and data terms.
