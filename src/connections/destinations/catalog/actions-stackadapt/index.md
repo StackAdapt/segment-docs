@@ -1,17 +1,17 @@
 ---
 title: StackAdapt (Actions) Destination
-id: 
-hide-personas-partial: true
 hide-boilerplate: true
-hide-dossier: false
+hide-dossier: true
 beta: true
 ---
 
-### Benefits of StackAdapt (Actions)
+{% include content/plan-grid.md name="actions" %}
 
-By setting up StackAdapt as a Segment destination, your Segment events will be forwarded to StackAdapt. This allows you to track conversions and measure return on ad spend using your Segment events - bypassing the need to install the StackAdapt pixel on your website and write code to send events to StackAdapt.
+By setting up StackAdapt as a Segment destination, your Segment events will be forwarded to [StackAdapt](https://www.stackadapt.com/){:target="_blank"}. This allows you to generate retargeting and lookalike audiences, track conversions, and measure return on ad spend using your Segment events - bypassing the need to install the StackAdapt pixel on your website and write code to send events to StackAdapt.
 
 This destination is maintained by StackAdapt. For any issues with the destination, please [submit a ticket to StackAdapt's support team](https://support.stackadapt.com/hc/en-us/requests/new?ticket_form_id=360006572593).
+
+{% include content/ajs-upgrade.md %}
 
 ## Getting started
 
@@ -108,6 +108,8 @@ analytics.track("Order Completed", {
 ### URL Rules
 
 If you are using URL rules, these will be matched whenever Segment sends an event to StackAdapt with a `url` matching the URL rule. This should be accomplished by the page event Segment automatically fires when a page is viewed, so setup of URL rules should be identical to setting up URL rules with the StackAdapt pixel.
+
+{% include components/actions-fields.html %}
 
 ## Data and Privacy
 
